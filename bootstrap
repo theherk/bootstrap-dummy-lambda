@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -euo pipefail
+
+HEADERS="$(mktemp)"
+EVENT_DATA=$(curl -sS -LD "$HEADERS" -X GET "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next")
+REQUEST_ID=$(grep -Fi Lambda-Runtime-Aws-Request-Id "$HEADERS" | tr -d '[:space:]' | cut -d: -f2)
+ERROR="{\"errorMessage\" : \"Lambda not installed or initialized.\", \"errorType\" : \"Uninitialized\"}"
+curl -X POST "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/$REQUEST_ID/error" -d "$ERROR" --header "Lambda-Runtime-Function-Error-Type: Uninitialized"
